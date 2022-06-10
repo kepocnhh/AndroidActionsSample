@@ -3,8 +3,11 @@ buildscript {
         google()
         mavenCentral()
     }
+    dependencies {
+        classpath(Dependency.Android.ToolsBuildGradle.notation())
+    }
 }
 
 task<Delete>("clean") {
-    delete = setOf(buildDir)
+    delete = setOf(buildDir, "buildSrc/build")
 }
