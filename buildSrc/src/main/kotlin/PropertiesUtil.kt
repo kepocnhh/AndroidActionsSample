@@ -9,7 +9,7 @@ fun File.toProperties(): Properties {
 
 fun Properties.requireString(key: String): String {
     check(containsKey(key)) {
-        "Property by key \"$key\" does not exist!"
+        "Properties does not contain the key \"$key\"."
     }
     val result = get(key)
     checkNotNull(result) {

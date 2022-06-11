@@ -36,3 +36,36 @@ android {
         }
     }
 }
+
+androidComponents.onVariants { variant ->
+    val output = variant.outputs.single()
+    check(output is com.android.build.api.variant.impl.VariantOutputImpl)
+    output.outputFileName.set("${Repository.name}-${output.versionCode.get()}-${variant.buildType!!}.apk")
+    afterEvaluate {
+        tasks.getByName<JavaCompile>("compile${variant.name.capitalize()}JavaWithJavac") {
+            targetCompatibility = Version.jvmTarget
+        }
+        tasks.getByName<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compile${variant.name.capitalize()}Kotlin") {
+            kotlinOptions.jvmTarget = Version.jvmTarget
+        }
+        val checkManifestTask = task("checkManifest${variant.name.capitalize()}") {
+            dependsOn("compile${variant.name.capitalize()}Sources")
+            doLast {
+                val file = "intermediates/merged_manifest/${variant.name}/AndroidManifest.xml"
+                val manifest = groovy.xml.XmlParser().parse(File(buildDir, file))
+                val actual = manifest.getAt(groovy.namespace.QName("uses-permission")).map {
+                    check(it is groovy.util.Node)
+                    val attributes = it.attributes().mapKeys { (k, _) -> k.toString() }
+                    val name = attributes["{http://schemas.android.com/apk/res/android}name"]
+                    check(name is String && name.isNotEmpty())
+                    name
+                }
+                val expected = emptySet<String>()
+                check(actual.sorted() == expected.sorted()) {
+                    "Actual is:\n${actual.joinToString(separator = "\n")}\nbut expected is:\n${expected.joinToString(separator = "\n")}"
+                }
+            }
+        }
+        tasks.getByName("assemble${variant.name.capitalize()}").dependsOn(checkManifestTask)
+    }
+}

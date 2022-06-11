@@ -1,7 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.kepocnhh.aas">
 
-    <!-- todo remove unused permissions -->
     <application
         android:label="Android Actions sample">
         <activity android:name=".presentation.module.main.MainActivity"
