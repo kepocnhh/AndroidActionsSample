@@ -40,6 +40,47 @@ task<JavaExec>("verifyCodeStyle") {
     )
 }
 
+task("verifyReadme") {
+    doLast {
+        val badges = setOf(
+            MarkdownUtil.image(
+                text = "version",
+                url = BadgeUtil.url(
+                    label = "version",
+                    message = Version.Application.full(),
+                    color = "2962ff"
+                )
+            )
+        )
+        FileUtil.check(
+            file = File(rootDir, "README.md"),
+            expected = badges,
+            report = File(buildDir, "reports/analysis/readme/index.html")
+        )
+    }
+}
+
+task("verifyLicense") {
+    doLast {
+        FileUtil.check(
+            file = File(rootDir, "LICENSE"),
+            expected = emptySet(),
+            report = File(buildDir, "reports/analysis/license/index.html")
+        )
+    }
+}
+
+task("verifyService") {
+    doLast {
+        val forbidden = setOf(".DS_Store")
+        rootDir.forEachRecurse {
+            if (!it.isDirectory) check(!forbidden.contains(it.name)) {
+                "File by path ${it.absolutePath} is forbidden!"
+            }
+        }
+    }
+}
+
 task("saveCommonInfo") {
     doLast {
         val result = org.json.JSONObject(
