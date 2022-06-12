@@ -6,6 +6,7 @@ repositories {
 plugins {
     id("com.android.application")
     id("kotlin-android")
+    id("org.gradle.jacoco")
 }
 
 android {
@@ -45,11 +46,45 @@ android {
     }
 }
 
+fun setCoverage(variant: com.android.build.api.variant.ApplicationVariant) {
+    val capitalize = variant.name.capitalize()
+    val taskUnitTest = tasks.getByName<Test>("test${capitalize}UnitTest")
+    val pack = "org.kepocnhh.aas"
+    val taskCoverageReport = task<JacocoReport>("test${capitalize}CoverageReport") {
+        dependsOn(taskUnitTest)
+        reports {
+            csv.required.set(false)
+            html.required.set(true)
+            xml.required.set(false)
+        }
+        sourceDirectories.setFrom("$projectDir/src/main/kotlin")
+        classDirectories.setFrom(
+            fileTree("$buildDir/tmp/kotlin-classes/" + variant.name) {
+                include("**/${pack.replace('.', '/')}/implementation/module/**/*")
+            }
+        )
+        executionData(taskUnitTest)
+    }
+    task<JacocoCoverageVerification>("test${capitalize}CoverageVerification") {
+        dependsOn(taskCoverageReport)
+        violationRules {
+            rule {
+                limit {
+                    minimum = BigDecimal(0.96)
+                }
+            }
+        }
+        classDirectories.setFrom(taskCoverageReport.classDirectories)
+        executionData(taskCoverageReport.executionData)
+    }
+}
+
 androidComponents.onVariants { variant ->
     val output = variant.outputs.single()
     check(output is com.android.build.api.variant.impl.VariantOutputImpl)
     output.outputFileName.set("${Repository.name}-${output.versionCode.get()}-${variant.buildType!!}.apk")
     afterEvaluate {
+        setCoverage(variant)
         tasks.getByName<JavaCompile>("compile${variant.name.capitalize()}JavaWithJavac") {
             targetCompatibility = Version.jvmTarget
         }
@@ -76,6 +111,10 @@ androidComponents.onVariants { variant ->
         }
         tasks.getByName("assemble${variant.name.capitalize()}").dependsOn(checkManifestTask)
     }
+}
+
+jacoco {
+    toolVersion = Version.jacoco
 }
 
 dependencies {
