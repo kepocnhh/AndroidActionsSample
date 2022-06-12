@@ -7,6 +7,7 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("org.gradle.jacoco")
+    id("io.gitlab.arturbosch.detekt") version Version.detekt
 }
 
 android {
@@ -79,12 +80,54 @@ fun setCoverage(variant: com.android.build.api.variant.ApplicationVariant) {
     }
 }
 
+fun setQuality(variant: com.android.build.api.variant.ApplicationVariant) {
+    val capitalize = variant.name.capitalize()
+    val configs = setOf(
+        "common",
+        "comments",
+        "complexity",
+        "coroutines",
+        "empty-blocks",
+        "exceptions",
+        "naming",
+        "performance",
+        "potential-bugs",
+        "style"
+    ).map { config ->
+        File(rootDir, "buildSrc/src/main/resources/detekt/config/$config.yml").existing()
+    }
+    setOf("main", "test").forEach { source ->
+        task<io.gitlab.arturbosch.detekt.Detekt>("verifyCodeQuality$capitalize${source.capitalize()}") {
+            jvmTarget = Version.jvmTarget
+            setSource(files("src/$source/kotlin"))
+            config.setFrom(configs)
+            reports {
+                xml.required.set(false)
+                sarif.required.set(false)
+                txt.required.set(false)
+                html {
+                    required.set(true)
+                    outputLocation.set(File(buildDir, "reports/analysis/code/quality/${variant.name}/$source/html/index.html"))
+                }
+            }
+            val postfix = when (source) {
+                "main" -> ""
+                "test" -> "UnitTest"
+                else -> error("Source \"$source\" is not supported!")
+            }
+            val detektTask = tasks.getByName<io.gitlab.arturbosch.detekt.Detekt>("detekt$capitalize$postfix")
+            classpath.setFrom(detektTask.classpath)
+        }
+    }
+}
+
 androidComponents.onVariants { variant ->
     val output = variant.outputs.single()
     check(output is com.android.build.api.variant.impl.VariantOutputImpl)
     output.outputFileName.set("${Repository.name}-${output.versionCode.get()}-${variant.buildType!!}.apk")
     afterEvaluate {
         setCoverage(variant)
+        setQuality(variant)
         tasks.getByName<JavaCompile>("compile${variant.name.capitalize()}JavaWithJavac") {
             targetCompatibility = Version.jvmTarget
         }

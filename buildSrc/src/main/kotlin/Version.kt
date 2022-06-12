@@ -3,6 +3,7 @@ object Version {
     const val kotlin = "1.5.31"
     const val jacoco = "0.8.7"
     const val ktlint = "0.45.2"
+    const val detekt = "1.20.0"
 
     object Android {
         const val toolsBuildGradle = "7.1.3"
