@@ -35,6 +35,14 @@ android {
             }
         }
     }
+
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = Version.Android.compose
+    }
 }
 
 androidComponents.onVariants { variant ->
@@ -68,4 +76,13 @@ androidComponents.onVariants { variant ->
         }
         tasks.getByName("assemble${variant.name.capitalize()}").dependsOn(checkManifestTask)
     }
+}
+
+dependencies {
+    implementation("androidx.activity:activity-compose:1.4.0")
+    implementation("androidx.appcompat:appcompat:1.4.2")
+    implementation("androidx.compose.foundation:foundation:${Version.Android.compose}")
+//    implementation("androidx.lifecycle:lifecycle-viewmodel:${Version.Android.lifecycle}")
+//    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${Version.Android.lifecycle}")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${Version.Android.lifecycle}")
 }

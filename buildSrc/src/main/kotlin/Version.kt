@@ -7,6 +7,8 @@ object Version {
         const val compileSdk = 31
         const val minSdk = 23
         const val targetSdk = compileSdk
+        const val lifecycle = "2.4.1"
+        const val compose = "1.0.5"
     }
 
     object Application {

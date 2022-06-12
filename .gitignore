@@ -3,5 +3,6 @@
 !/buildSrc
 !.gitignore
 !build.gradle.kts
+!gradle.properties
 !settings.gradle.kts
 !README.md

@@ -2,6 +2,8 @@
     package="org.kepocnhh.aas">
 
     <application
+        android:name=".App"
+        android:theme="@style/App.Theme"
         android:label="Android Actions sample">
         <activity android:name=".presentation.module.main.MainActivity"
             android:exported="true">
