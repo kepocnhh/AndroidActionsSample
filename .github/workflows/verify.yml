@@ -7,6 +7,10 @@ on:
         description: "GIT source name. For example [dev, wip...]."
         required: true
         default: "dev"
+      build_variant:
+        description: "Android build variant name (build flavor + build type). For example [debug, release...]."
+        required: true
+        default: "debug"
 
 jobs:
   build:
@@ -38,16 +42,16 @@ jobs:
            --build-arg GIT_SOURCE=$GIT_SOURCE \
            -t image.verify:$GITHUB_RUN_NUMBER \
            -f $BUILD_PATH/repository/buildSrc/src/main/resources/docker/verify.docker $BUILD_PATH/repository
-          echo "REPOSITORY_OWNER=$REPOSITORY_OWNER" > /tmp/build${GITHUB_RUN_NUMBER}.env
-          echo "REPOSITORY_NAME=$REPOSITORY_NAME" >> /tmp/build${GITHUB_RUN_NUMBER}.env
-          echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER" >> /tmp/build${GITHUB_RUN_NUMBER}.env
-          echo "GITHUB_RUN_ID=$GITHUB_RUN_ID" >> /tmp/build${GITHUB_RUN_NUMBER}.env
-          echo "TELEGRAM_BOT_ID=$TELEGRAM_BOT_ID" >> /tmp/build${GITHUB_RUN_NUMBER}.env
-          echo "TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID" >> /tmp/build${GITHUB_RUN_NUMBER}.env
+          echo "REPOSITORY_OWNER=$REPOSITORY_OWNER" > $BUILD_PATH/env
+          echo "REPOSITORY_NAME=$REPOSITORY_NAME" >> $BUILD_PATH/env
+          echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER" >> $BUILD_PATH/env
+          echo "GITHUB_RUN_ID=$GITHUB_RUN_ID" >> $BUILD_PATH/env
+          echo "TELEGRAM_BOT_ID=$TELEGRAM_BOT_ID" >> $BUILD_PATH/env
+          echo "TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID" >> $BUILD_PATH/env
           docker run --rm \
            -e VCS_PAT=$VCS_PAT \
            -e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN \
            -e VCS_DOMAIN="https://api.github.com" \
-           --env-file /tmp/build${GITHUB_RUN_NUMBER}.env \
+           --env-file $BUILD_PATH/env \
            --name container.verify image.verify:$GITHUB_RUN_NUMBER \
            /bin/bash repository/buildSrc/src/main/resources/bash/workflow/verify/main.sh
