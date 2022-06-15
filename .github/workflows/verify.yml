@@ -19,9 +19,6 @@ jobs:
       REPOSITORY_OWNER: kepocnhh
       REPOSITORY_NAME: AndroidActionsSample
       VCS_PAT: ${{secrets.PERSONAL_ACCESS_TOKEN}}
-      TELEGRAM_BOT_ID: ${{secrets.TELEGRAM_BOT_ID}}
-      TELEGRAM_BOT_TOKEN: ${{secrets.TELEGRAM_BOT_TOKEN}}
-      TELEGRAM_CHAT_ID: ${{secrets.TELEGRAM_CHAT_ID}}
     steps:
       - run: |
           echo "HOME=$(echo ~)" >> $GITHUB_ENV
@@ -43,6 +40,12 @@ jobs:
            --build-arg GIT_SOURCE=$GIT_SOURCE \
            -t image.verify:$GITHUB_RUN_NUMBER \
            -f $BUILD_PATH/repository/buildSrc/src/main/resources/docker/verify.docker $BUILD_PATH/repository
+      - env:
+          KEYSTORES: ${{secrets.KEYSTORES}}
+          TELEGRAM_BOT_ID: ${{secrets.TELEGRAM_BOT_ID}}
+          TELEGRAM_BOT_TOKEN: ${{secrets.TELEGRAM_BOT_TOKEN}}
+          TELEGRAM_CHAT_ID: ${{secrets.TELEGRAM_CHAT_ID}}
+        run: |
           echo "REPOSITORY_OWNER=$REPOSITORY_OWNER" > $BUILD_PATH/env
           echo "REPOSITORY_NAME=$REPOSITORY_NAME" >> $BUILD_PATH/env
           echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER" >> $BUILD_PATH/env
@@ -54,8 +57,8 @@ jobs:
            -e VCS_PAT=$VCS_PAT \
            -e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN \
            -e VCS_DOMAIN="https://api.github.com" \
-           -e KEYSTORE="$(echo "${{secrets.KEYSTORES}}" | jq -r ".${BUILD_VARIANT}.base64")" \
-           -e KEYSTORE_PASSWORD="$(echo "${{secrets.KEYSTORES}}" | jq -r ".${BUILD_VARIANT}.password")" \
+           -e KEYSTORE="$(echo "$KEYSTORES" | jq -r ".${BUILD_VARIANT}.base64")" \
+           -e KEYSTORE_PASSWORD="$(echo "$KEYSTORES" | jq -r ".${BUILD_VARIANT}.password")" \
            --env-file $BUILD_PATH/env \
            --name container.verify image.verify:$GITHUB_RUN_NUMBER \
            /bin/bash repository/buildSrc/src/main/resources/bash/workflow/verify/main.sh
