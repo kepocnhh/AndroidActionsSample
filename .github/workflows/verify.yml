@@ -54,8 +54,8 @@ jobs:
            -e VCS_PAT=$VCS_PAT \
            -e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN \
            -e VCS_DOMAIN="https://api.github.com" \
-           -e KEYSTORE="$(jq -r ".${BUILD_VARIANT}.base64" ${{secrets.KEYSTORES}})" \
-           -e KEYSTORE_PASSWORD="$(jq -r ".${BUILD_VARIANT}.password" ${{secrets.KEYSTORES}})" \
+           -e KEYSTORE="$(echo "${{secrets.KEYSTORES}}" | jq -r ".${BUILD_VARIANT}.base64")" \
+           -e KEYSTORE_PASSWORD="$(echo "${{secrets.KEYSTORES}}" | jq -r ".${BUILD_VARIANT}.password")" \
            --env-file $BUILD_PATH/env \
            --name container.verify image.verify:$GITHUB_RUN_NUMBER \
            /bin/bash repository/buildSrc/src/main/resources/bash/workflow/verify/main.sh
