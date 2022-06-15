@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if test $# -ne 2; then
+ echo "Script needs for 2 argument but actual $#"; exit 11
+fi
+
+CODE=$1
+MESSAGE="$2"
+
+for it in CODE MESSAGE; do
+ if test -z "${!it}"; then echo "$it is empty!"; exit 12; fi; done
+
+echo "$MESSAGE"
+
+if [[ "$CODE" =~ [1-9][0-9]* ]]; then
+ if test $CODE -eq 0; then
+  echo "Unknown error code!"; exit 13
+ fi
+ exit $CODE
+fi
+
+echo "Code format error \"$CODE\"!"; exit 14

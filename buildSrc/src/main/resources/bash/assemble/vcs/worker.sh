@@ -2,8 +2,9 @@
 
 echo "Assemble VCS worker..."
 
-for it in VCS_DOMAIN VCS_PAT; do
- if test -z "${!it}"; then echo "$it is empty!"; exit 11; fi; done
+SCRIPTS=repository/buildSrc/src/main/resources/bash
+
+. $SCRIPTS/util/require VCS_DOMAIN VCS_PAT
 
 CODE=0
 CODE=$(curl -w %{http_code} -o assemble/vcs/worker.json \
@@ -15,23 +16,17 @@ if test $CODE -ne 200; then
  exit 22
 fi
 
-REQUIRE_FILLED_STRING="select((.!=null)and(type==\"string\")and(.!=\"\"))"
-REQUIRE_INT="select((.!=null)and(type==\"number\"))"
-
-WORKER_ID="$(jq -cerM ".id|$REQUIRE_INT" assemble/vcs/worker.json)" || exit 31 # todo
-WORKER_LOGIN="$(jq -cerM ".login|$REQUIRE_FILLED_STRING" assemble/vcs/worker.json)" || exit 32 # todo
-
-for it in WORKER_ID WORKER_LOGIN; do
- if test -z "${!it}"; then echo "$it is empty!"; exit 11; fi; done
+WORKER_ID=$($SCRIPTS/util/jqx -si assemble/vcs/worker.json .id) \
+ || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
+WORKER_LOGIN=$($SCRIPTS/util/jqx -sfs assemble/vcs/worker.json .login) \
+ || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
 
 WORKER_VCS_EMAIL="${WORKER_ID}+${WORKER_LOGIN}@users.noreply.github.com"
 
 echo "$(jq ".vcs_email=\"$WORKER_VCS_EMAIL\"" assemble/vcs/worker.json)" > assemble/vcs/worker.json
 
-WORKER_HTML_URL="$(jq -cerM ".html_url|$REQUIRE_FILLED_STRING" assemble/vcs/worker.json)" || exit 33 # todo
-
-for it in WORKER_HTML_URL; do
- if test -z "${!it}"; then echo "$it is empty!"; exit 11; fi; done
+WORKER_HTML_URL=$($SCRIPTS/util/jqx -sfs assemble/vcs/worker.json .html_url) \
+ || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
 
 echo "The worker $WORKER_HTML_URL is ready."
 

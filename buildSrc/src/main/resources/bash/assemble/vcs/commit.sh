@@ -2,12 +2,11 @@
 
 echo "Assemble VCS commit..."
 
-REQUIRE_FILLED_STRING="select((.!=null)and(type==\"string\")and(.!=\"\"))"
-
 GIT_COMMIT_SHA="$(git -C repository rev-parse HEAD)" || exit 1 # todo
 
-for it in VCS_DOMAIN REPOSITORY_OWNER REPOSITORY_NAME GIT_COMMIT_SHA; do
- if test -z "${!it}"; then echo "$it is empty!"; exit 11; fi; done
+SCRIPTS=repository/buildSrc/src/main/resources/bash
+
+. $SCRIPTS/util/require VCS_DOMAIN REPOSITORY_OWNER REPOSITORY_NAME GIT_COMMIT_SHA
 
 CODE=0
 CODE=$(curl -w %{http_code} -o assemble/vcs/commit.json \
@@ -17,10 +16,12 @@ if test $CODE -ne 200; then
  echo "Request error with response code $CODE!"
  exit 32
 fi
-COMMIT_HTML_URL="$(jq -cerM ".html_url|$REQUIRE_FILLED_STRING" assemble/vcs/commit.json)" || exit 1 # todo
-AUTHOR_LOGIN="$(jq -cerM ".author.login|$REQUIRE_FILLED_STRING" assemble/vcs/commit.json)" || exit 1 # todo
-for it in COMMIT_HTML_URL AUTHOR_LOGIN; do
- if test -z "${!it}"; then echo "$it is empty!"; exit 11; fi; done
+
+COMMIT_HTML_URL=$($SCRIPTS/util/jqx -sfs assemble/vcs/commit.json .html_url) \
+ || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
+AUTHOR_LOGIN=$($SCRIPTS/util/jqx -sfs assemble/vcs/commit.json .author.login) \
+ || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
+
 echo "The commit $COMMIT_HTML_URL is ready."
 
 mkdir -p assemble/vcs/commit || exit 1 # todo
@@ -32,7 +33,10 @@ if test $CODE -ne 200; then
  echo "Request error with response code $CODE!"
  exit 42
 fi
-AUTHOR_HTML_URL="$(jq -cerM ".html_url|$REQUIRE_FILLED_STRING" assemble/vcs/commit/author.json)" || exit 1 # todo
+
+AUTHOR_HTML_URL=$($SCRIPTS/util/jqx -sfs assemble/vcs/commit/author.json .html_url) \
+ || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
+
 echo "The author $AUTHOR_HTML_URL is ready."
 
 exit 0
