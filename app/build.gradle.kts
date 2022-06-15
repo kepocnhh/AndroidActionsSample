@@ -28,7 +28,7 @@ android {
             isShrinkResources = false
             manifestPlaceholders["buildType"] = name
             isTestCoverageEnabled = false
-            signingConfigs.getByName(name) {
+            signingConfig = signingConfigs.getByName(name) {
                 storeFile = file("src/$name/resources/key.pkcs12").existing()
                 storePassword = file("src/$name/resources/properties").existing()
                     .toProperties().requireString("password").filled()

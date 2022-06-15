@@ -27,7 +27,8 @@ jobs:
           echo "HOME=$(echo ~)" >> $GITHUB_ENV
           echo "BUILD_PATH=$HOME/$(jq -r .workflow $GITHUB_EVENT_PATH | base64)/$GITHUB_RUN_NUMBER/$GITHUB_RUN_ID" >> $GITHUB_ENV
           echo "GIT_SOURCE=${{github.event.inputs.git_source}}" >> $GITHUB_ENV
-          if test "$VCS_PAT" == ""; then exit 2; fi
+          echo "BUILD_VARIANT=${{github.event.inputs.build_variant}}" >> $GITHUB_ENV
+          if test "$VCS_PAT" == ""; then exit 21; fi
       - run: |
           mkdir -p $BUILD_PATH/repository
           git -C $BUILD_PATH/repository init
@@ -46,12 +47,15 @@ jobs:
           echo "REPOSITORY_NAME=$REPOSITORY_NAME" >> $BUILD_PATH/env
           echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER" >> $BUILD_PATH/env
           echo "GITHUB_RUN_ID=$GITHUB_RUN_ID" >> $BUILD_PATH/env
+          echo "BUILD_VARIANT=$BUILD_VARIANT" >> $BUILD_PATH/env
           echo "TELEGRAM_BOT_ID=$TELEGRAM_BOT_ID" >> $BUILD_PATH/env
           echo "TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID" >> $BUILD_PATH/env
           docker run --rm \
            -e VCS_PAT=$VCS_PAT \
            -e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN \
            -e VCS_DOMAIN="https://api.github.com" \
+           -e KEYSTORE="$(jq -r ".${BUILD_VARIANT}.base64" ${{secrets.KEYSTORES}})" \
+           -e KEYSTORE_PASSWORD="$(jq -r ".${BUILD_VARIANT}.password" ${{secrets.KEYSTORES}})" \
            --env-file $BUILD_PATH/env \
            --name container.verify image.verify:$GITHUB_RUN_NUMBER \
            /bin/bash repository/buildSrc/src/main/resources/bash/workflow/verify/main.sh
