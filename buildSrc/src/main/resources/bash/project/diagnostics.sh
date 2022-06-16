@@ -19,11 +19,12 @@ for ((i=0; i<SIZE; i++)); do
   || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
  TASK=$($SCRIPTS/util/jqx -sfs $ENVIRONMENT ".${TYPE}.task") \
   || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
- test "$BY_VARIANT" == "true" && TASK=${TASK//"?"/"$BUILD_VARIANT"}
+ test "$BY_VARIANT" == "true" && TASK=${TASK//"?"/"${BUILD_VARIANT^}"}
  gradle -p repository "$TASK"; CODE=$?
  if test $CODE -ne 0; then
   RELATIVE=$($SCRIPTS/util/jqx -sfs $ENVIRONMENT ".${TYPE}.path") \
    || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
+  test "$BY_VARIANT" == "true" && RELATIVE=${RELATIVE//"?"/"$BUILD_VARIANT"}
   TITLE=$($SCRIPTS/util/jqx -sfs $ENVIRONMENT ".${TYPE}.title") \
    || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
   mkdir -p diagnostics/report/$RELATIVE
@@ -41,16 +42,18 @@ ENVIRONMENT=repository/buildSrc/src/main/resources/json/unit_test.json
 TYPE="UNIT_TEST"
 TASK=$($SCRIPTS/util/jqx -sfs $ENVIRONMENT ".${TYPE}.task") \
  || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
-TASK=${TASK//"?"/"$BUILD_VARIANT"}
+TASK=${TASK//"?"/"${BUILD_VARIANT^}"}
 gradle -p repository "$TASK"; CODE=$?
 if test $CODE -ne 0; then
  RELATIVE=$($SCRIPTS/util/jqx -sfs $ENVIRONMENT ".${TYPE}.path") \
   || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
+ RELATIVE=${RELATIVE//"?"/"$BUILD_VARIANT"}
  TITLE=$($SCRIPTS/util/jqx -sfs $ENVIRONMENT ".${TYPE}.title") \
   || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
  mkdir -p diagnostics/report/$RELATIVE
  REPORT=$($SCRIPTS/util/jqx -sfs $ENVIRONMENT ".${TYPE}.report") \
   || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
+ REPORT=${REPORT//"?"/"${BUILD_VARIANT^}"}
  cp -r repository/$REPORT/* diagnostics/report/$RELATIVE || exit 1 # todo
  echo "$(jq -Mc ".$TYPE.path=\"$RELATIVE\"" diagnostics/summary.json)" > diagnostics/summary.json \
   && echo "$(jq -Mc ".$TYPE.title=\"$TITLE\"" diagnostics/summary.json)" > diagnostics/summary.json \
@@ -68,11 +71,13 @@ else
  if test $CODE -ne 0; then
   RELATIVE=$($SCRIPTS/util/jqx -sfs $ENVIRONMENT ".${TYPE}.path") \
    || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
+  RELATIVE=${RELATIVE//"?"/"$BUILD_VARIANT"}
   TITLE=$($SCRIPTS/util/jqx -sfs $ENVIRONMENT ".${TYPE}.title") \
    || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
   mkdir -p diagnostics/report/$RELATIVE
   REPORT=$($SCRIPTS/util/jqx -sfs $ENVIRONMENT ".${TYPE}.report") \
    || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
+  REPORT=${REPORT//"?"/"${BUILD_VARIANT^}"}
   cp -r repository/$REPORT/* diagnostics/report/$RELATIVE || exit 1 # todo
   echo "$(jq -Mc ".$TYPE.path=\"$RELATIVE\"" diagnostics/summary.json)" > diagnostics/summary.json \
    && echo "$(jq -Mc ".$TYPE.title=\"$TITLE\"" diagnostics/summary.json)" > diagnostics/summary.json \

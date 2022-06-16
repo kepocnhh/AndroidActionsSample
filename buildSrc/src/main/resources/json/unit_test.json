@@ -1,13 +1,13 @@
 {
   "UNIT_TEST": {
-    "report": "app/build/reports/tests/test",
-    "path": "unit/test",
+    "report": "app/build/reports/tests/test?UnitTest",
+    "path": "unit/test/?",
     "title": "Unit test",
     "task": "app:test?UnitTest"
   },
   "TEST_COVERAGE": {
-    "report": "app/build/reports/jacoco/test/html",
-    "path": "test/coverage",
+    "report": "app/build/reports/jacoco/test?CoverageReport/html",
+    "path": "test/coverage/?",
     "title": "Test coverage",
     "task": "app:test?CoverageReport",
     "verification": {
