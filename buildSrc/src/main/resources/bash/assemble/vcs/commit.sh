@@ -2,9 +2,10 @@
 
 echo "Assemble VCS commit..."
 
-GIT_COMMIT_SHA="$(git -C repository rev-parse HEAD)" || exit 1 # todo
-
 SCRIPTS=repository/buildSrc/src/main/resources/bash
+
+GIT_COMMIT_SHA="$(git -C repository rev-parse HEAD)" \
+ || . $SCRIPTS/util/throw 11 "Get commit SHA error!"
 
 . $SCRIPTS/util/require VCS_DOMAIN REPOSITORY_OWNER REPOSITORY_NAME GIT_COMMIT_SHA
 
