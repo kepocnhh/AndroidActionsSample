@@ -7,9 +7,8 @@ import org.kepocnhh.aas.foundation.provider.injection.Injection
 import java.io.File
 import java.nio.file.Files
 import java.util.concurrent.Executors
-import kotlin.coroutines.CoroutineContext
 
-class MockInjection(
+internal class MockInjection(
     override val cacheDir: File = Files.createTempDirectory("mock_prefix").toFile(),
     override val coroutines: CoroutinesProvider = CoroutinesProvider(
         main = Executors.newSingleThreadExecutor()

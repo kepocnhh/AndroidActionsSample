@@ -166,7 +166,7 @@ style:
   UseCheckOrError:
     active: true
   UseDataClass:
-    active: true
+    active: false # DataClassShouldBeImmutable
     allowVars: false
   UseEmptyCounterpart:
     active: true

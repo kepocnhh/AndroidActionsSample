@@ -10,7 +10,6 @@ import kotlinx.coroutines.Dispatchers
 import org.kepocnhh.aas.foundation.provider.coroutines.CoroutinesProvider
 import org.kepocnhh.aas.foundation.provider.injection.Injection
 import java.io.File
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 private class AppInjection(
@@ -18,21 +17,8 @@ private class AppInjection(
     override val coroutines: CoroutinesProvider,
 ) : Injection
 
-class App : Application() {
-    companion object {
-        private var _viewModelFactory: ViewModelProvider.Factory? = null
-        val viewModelFactory: ViewModelProvider.Factory get() {
-            return requireNotNull(_viewModelFactory)
-        }
-
-        @Composable
-        inline fun <reified T : ViewModel> viewModel(
-            owner: ViewModelStoreOwner = LocalViewModelStoreOwner.current ?: TODO()
-        ): T {
-            return ViewModelProvider(owner, viewModelFactory).get(T::class.java)
-        }
-    }
-
+internal class App : Application() {
+    @Suppress("InjectDispatcher")
     override fun onCreate() {
         super.onCreate()
         val coroutines = CoroutinesProvider(
@@ -47,6 +33,22 @@ class App : Application() {
             override fun <U : ViewModel> create(modelClass: Class<U>): U {
                 return modelClass.getConstructor(Injection::class.java).newInstance(injection)
             }
+        }
+    }
+
+    companion object {
+        private var _viewModelFactory: ViewModelProvider.Factory? = null
+        val viewModelFactory: ViewModelProvider.Factory
+            get() {
+                return requireNotNull(_viewModelFactory)
+            }
+
+        @Composable
+        inline fun <reified T : ViewModel> viewModel(
+            owner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
+                ?: error("Local view model store does not exist!")
+        ): T {
+            return ViewModelProvider(owner, viewModelFactory)[T::class.java]
         }
     }
 }

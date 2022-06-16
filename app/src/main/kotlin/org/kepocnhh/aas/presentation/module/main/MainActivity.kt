@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class MainActivity : AppCompatActivity() {
+internal class MainActivity : AppCompatActivity() {
     @Composable
     private fun Presentation() {
         val viewModel: MainViewModel = App.viewModel()
@@ -30,13 +30,15 @@ class MainActivity : AppCompatActivity() {
                     timeState.value = it
                 }
             } else {
-                BasicText(modifier = Modifier.align(Alignment.Center), text = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.US).format(Date(time)))
+                BasicText(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.US).format(Date(time))
+                )
             }
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?)
-    {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             Presentation()
