@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import kotlinx.coroutines.Dispatchers
+import org.kepocnhh.aas.foundation.provider.coroutines.CoroutinesProvider
 import org.kepocnhh.aas.foundation.provider.injection.Injection
 import java.io.File
 import kotlin.coroutines.CoroutineContext
@@ -13,7 +15,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 private class AppInjection(
     override val cacheDir: File,
-    override val context: CoroutineContext,
+    override val coroutines: CoroutinesProvider,
 ) : Injection
 
 class App : Application() {
@@ -33,9 +35,13 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        val coroutines = CoroutinesProvider(
+            main = EmptyCoroutineContext,
+            io = Dispatchers.IO
+        )
         val injection: Injection = AppInjection(
             cacheDir = cacheDir,
-            context = EmptyCoroutineContext,
+            coroutines = coroutines,
         )
         _viewModelFactory = object : ViewModelProvider.Factory {
             override fun <U : ViewModel> create(modelClass: Class<U>): U {

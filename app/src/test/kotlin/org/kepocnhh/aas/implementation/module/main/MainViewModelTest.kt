@@ -10,7 +10,6 @@ import kotlin.coroutines.suspendCoroutine
 class MainViewModelTest {
     @Test(timeout = 10_000)
     fun logoutTest() {
-        TODO()
 //        val injection = MockInjection()
 //        injection.runViewModel<MainViewModel> { viewModel ->
 //            val time = suspendCoroutine<Long> { continuation ->

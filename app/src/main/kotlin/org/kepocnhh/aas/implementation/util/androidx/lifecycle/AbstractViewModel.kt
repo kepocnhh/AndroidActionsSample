@@ -9,6 +9,6 @@ import org.kepocnhh.aas.foundation.provider.injection.Injection
 
 abstract class AbstractViewModel : ViewModel() {
     protected fun Injection.launch(block: suspend CoroutineScope.() -> Unit): Job {
-        return viewModelScope.launch(context, block = block)
+        return viewModelScope.launch(coroutines.main, block = block)
     }
 }
