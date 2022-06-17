@@ -4,11 +4,12 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.kepocnhh.aas.implementation.provider.injection.mock.MockInjection
 import org.kepocnhh.aas.util.androidx.lifecycle.runViewModel
+import org.kepocnhh.aas.util.org.junit.JUnitUtil
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class MainViewModelTest {
-    @Test(timeout = 10_000)
+internal class MainViewModelTest {
+    @Test(timeout = JUnitUtil.timeout)
     fun logoutTest() {
         val injection = MockInjection()
         injection.runViewModel<MainViewModel> { viewModel ->
