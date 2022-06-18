@@ -10,7 +10,7 @@ WORKER_NAME=$($SCRIPTS/util/jqx -sfs assemble/vcs/worker.json .name) \
  || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
 WORKER_VCS_EMAIL=$($SCRIPTS/util/jqx -sfs assemble/vcs/worker.json .vcs_email) \
  || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
-GIT_BRANCH_DST=$($SCRIPTS/util/jqx -sfs assemble/vcs/pr${PR_NUMBER}.json .base.sha) \
+GIT_BRANCH_DST=$($SCRIPTS/util/jqx -sfs assemble/vcs/pr${PR_NUMBER}.json .base.ref) \
  || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
 GIT_COMMIT_SRC=$($SCRIPTS/util/jqx -sfs assemble/vcs/pr${PR_NUMBER}.json .head.sha) \
  || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
