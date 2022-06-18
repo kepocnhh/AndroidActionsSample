@@ -23,7 +23,7 @@ BODY="$(echo "$BODY" | jq -Mc ".prerelease=true")"
 mkdir -p assemble/github
 /bin/bash $SCRIPTS/github/release.sh "$BODY" || exit 16
 
-ARTIFACT="${REPOSITORY_NAME}-${VERSION_NAME}-${VERSION_CODE}-${BUILD_VARIANT}.apk"
+ARTIFACT_NAME="${REPOSITORY_NAME}-${VERSION_NAME}-${VERSION_CODE}-${BUILD_VARIANT}.apk"
 ARTIFACT="$(echo "{}" | jq -Mc ".name=\"$ARTIFACT_NAME\"")"
 ARTIFACT="$(echo "$ARTIFACT" | jq -Mc ".label=\"$ARTIFACT_NAME\"")"
 ARTIFACT="$(echo "$ARTIFACT" | jq -Mc ".path=\"assemble/project/artifact/$ARTIFACT_NAME\"")"
