@@ -28,5 +28,15 @@ case "$OPTION" in
   if [ ! -f "$FILE_PATH" ]; then
    echo "File $FILE_PATH does not exist!"; exit 21
   fi;;
+ -d)
+  if test $# -ne 2; then
+   echo "Script needs for 2 argument but actual $#"; exit 21
+  fi
+  DIR_PATH="$2"
+  for it in DIR_PATH; do
+   if test -z "${!it}"; then echo "$it is empty!" > $OUTPUT; exit 22; fi; done
+  if [ ! -d "$DIR_PATH" ]; then
+   echo "Dir $DIR_PATH does not exist!"; exit 21
+  fi;;
  *) echo "Option \"$OPTION\" is not supported!"; exit 91;;
 esac
