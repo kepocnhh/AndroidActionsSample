@@ -20,12 +20,18 @@ RELEASE_ID=$($SCRIPTS/util/jqx -si assemble/github/release.json .id) \
 
 URL="https://uploads.github.com/repos/$REPOSITORY_OWNER/$REPOSITORY_NAME/releases/$RELEASE_ID/assets"
 
-SIZE=$(echo "$ARTIFACTS" | jq -Mcer "$SELECT_FILLED_ARRAY|length") || exit 1 # todo
+CODE=0
+SIZE=$(echo "$ARTIFACTS" | jq -Mcer "$SELECT_FILLED_ARRAY|length") \
+ || . $SCRIPTS/util/throw 12 "Get size of array $ARTIFACTS error!"
 for ((i = 0; i < SIZE; i++)); do
- ARTIFACT="$(echo "$ARTIFACTS" | jq -Mc ".[$i]")"
- ARTIFACT_NAME="$(echo "$ARTIFACT" | jq -Mcer ".name|$SELECT_FILLED_STRING")" || exit $((100+i))
- ARTIFACT_LABEL="$(echo "$ARTIFACT" | jq -Mcer ".label|$SELECT_FILLED_STRING")" || exit $((110+i))
- ARTIFACT_PATH="$(echo "$ARTIFACT" | jq -Mcer ".path|$SELECT_FILLED_STRING")" || exit $((120+i))
+ ARTIFACT="$(echo "$ARTIFACTS" | jq -Mce ".[$i]")" \
+  || . $SCRIPTS/util/throw $((100+i)) "Get item #$i of array $ARTIFACTS error!"
+ ARTIFACT_NAME="$(echo "$ARTIFACT" | jq -Mcer ".name|$SELECT_FILLED_STRING")" \
+  || . $SCRIPTS/util/throw $((110+i)) "Get name of $ARTIFACT error!"
+ ARTIFACT_LABEL="$(echo "$ARTIFACT" | jq -Mcer ".label|$SELECT_FILLED_STRING")" \
+  || . $SCRIPTS/util/throw $((120+i)) "Get label of $ARTIFACT error!"
+ ARTIFACT_PATH="$(echo "$ARTIFACT" | jq -Mcer ".path|$SELECT_FILLED_STRING")" \
+  || . $SCRIPTS/util/throw $((130+i)) "Get path of $ARTIFACT error!"
  CODE=$(curl -w %{http_code} -o /tmp/artifact -X POST \
   "$URL?name=$ARTIFACT_NAME&label=$ARTIFACT_LABEL" \
   -H "Authorization: token $VCS_PAT" \
