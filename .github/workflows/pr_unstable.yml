@@ -1,16 +1,10 @@
-name: Verify
+name: Pull request to unstable
 
 on:
-  workflow_dispatch:
-    inputs:
-      git_source:
-        description: "GIT source name. For example [dev, wip...]."
-        required: true
-        default: "dev"
-      build_variant:
-        description: "Android build variant name (build flavor + build type). For example [debug, release...]."
-        required: true
-        default: "debug"
+  pull_request:
+    types: [opened, reopened]
+    branches:
+      - unstable
 
 jobs:
   build:
@@ -23,23 +17,21 @@ jobs:
       - run: |
           echo "HOME=$(echo ~)" >> $GITHUB_ENV
           echo "BUILD_PATH=$HOME/$(jq -Mcer .workflow $GITHUB_EVENT_PATH | base64)/$GITHUB_RUN_NUMBER/$GITHUB_RUN_ID" >> $GITHUB_ENV
-          echo "GIT_SOURCE=${{github.event.inputs.git_source}}" >> $GITHUB_ENV
-          echo "BUILD_VARIANT=${{github.event.inputs.build_variant}}" >> $GITHUB_ENV
-          if test "$VCS_PAT" == ""; then exit 21; fi
+          if test "$VCS_PAT" == ""; then exit 1; fi
       - run: |
           mkdir -p $BUILD_PATH/repository
           git -C $BUILD_PATH/repository init
           git -C $BUILD_PATH/repository remote add origin https://$VCS_PAT@github.com/$REPOSITORY_OWNER/$REPOSITORY_NAME.git
-          git -C $BUILD_PATH/repository fetch --depth=1 origin $GIT_SOURCE
+          git -C $BUILD_PATH/repository fetch --depth=1 origin $(jq -Mcer .pull_request.head.sha $GITHUB_EVENT_PATH)
           git -C $BUILD_PATH/repository checkout FETCH_HEAD
       - run: |
           docker build --no-cache \
            --build-arg REPOSITORY_OWNER=$REPOSITORY_OWNER \
            --build-arg REPOSITORY_NAME=$REPOSITORY_NAME \
            --build-arg VCS_PAT=$VCS_PAT \
-           --build-arg GIT_SOURCE=$GIT_SOURCE \
-           -t image.verify:$GITHUB_RUN_NUMBER \
-           -f $BUILD_PATH/repository/buildSrc/src/main/resources/docker/verify.docker $BUILD_PATH/repository
+           --build-arg GIT_BRANCH_SRC=$(jq -r .pull_request.head.ref $GITHUB_EVENT_PATH) \
+           -t image.pr.unstable:$GITHUB_RUN_NUMBER \
+           -f $BUILD_PATH/repository/buildSrc/src/main/resources/docker/pr/unstable.docker $BUILD_PATH/repository
       - env:
           KEYSTORES: ${{secrets.KEYSTORES}}
           KEYSTORE_FINGERPRINTS: ${{secrets.KEYSTORE_FINGERPRINTS}}
@@ -51,16 +43,17 @@ jobs:
           echo "REPOSITORY_NAME=$REPOSITORY_NAME" >> $BUILD_PATH/env
           echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER" >> $BUILD_PATH/env
           echo "GITHUB_RUN_ID=$GITHUB_RUN_ID" >> $BUILD_PATH/env
-          echo "BUILD_VARIANT=$BUILD_VARIANT" >> $BUILD_PATH/env
-          echo "TELEGRAM_BOT_ID=$TELEGRAM_BOT_ID" >> $BUILD_PATH/env
-          echo "TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID" >> $BUILD_PATH/env
+          echo "TELEGRAM_BOT_ID=$TELEGRAM_BOT_ID" >> /tmp/build${GITHUB_RUN_NUMBER}.env
+          echo "TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID" >> /tmp/build${GITHUB_RUN_NUMBER}.env
+          echo "PR_NUMBER=$(jq -Mcer .pull_request.number $GITHUB_EVENT_PATH)" >> /tmp/build${GITHUB_RUN_NUMBER}.env
           docker run --rm \
            -e VCS_PAT=$VCS_PAT \
            -e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN \
            -e VCS_DOMAIN="https://api.github.com" \
+           -e BUILD_VARIANT="debug" \
            -e KEYSTORE="$(echo "$KEYSTORES" | jq -r ".${BUILD_VARIANT}.base64")" \
            -e KEYSTORE_PASSWORD="$(echo "$KEYSTORES" | jq -r ".${BUILD_VARIANT}.password")" \
            -e KEYSTORE_FINGERPRINT="$(echo "$KEYSTORE_FINGERPRINTS" | jq -re ".${BUILD_VARIANT}.sha256")" \
            --env-file $BUILD_PATH/env \
-           --name container.verify image.verify:$GITHUB_RUN_NUMBER \
-           /bin/bash repository/buildSrc/src/main/resources/bash/workflow/verify/main.sh
+           --name container.pr.unstable image.pr.unstable:$GITHUB_RUN_NUMBER \
+           /bin/bash repository/buildSrc/src/main/resources/bash/workflow/pr/unstable/main.sh
