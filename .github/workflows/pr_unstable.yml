@@ -17,6 +17,7 @@ jobs:
       - run: |
           echo "HOME=$(echo ~)" >> $GITHUB_ENV
           echo "BUILD_PATH=$HOME/$(jq -Mcer .workflow $GITHUB_EVENT_PATH | base64)/$GITHUB_RUN_NUMBER/$GITHUB_RUN_ID" >> $GITHUB_ENV
+          echo "BUILD_VARIANT=debug" >> $GITHUB_ENV
           if test "$VCS_PAT" == ""; then exit 1; fi
       - run: |
           mkdir -p $BUILD_PATH/repository
@@ -43,7 +44,7 @@ jobs:
           echo "REPOSITORY_NAME=$REPOSITORY_NAME" >> $BUILD_PATH/env
           echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER" >> $BUILD_PATH/env
           echo "GITHUB_RUN_ID=$GITHUB_RUN_ID" >> $BUILD_PATH/env
-          echo "BUILD_VARIANT=debug" >> $BUILD_PATH/env
+          echo "BUILD_VARIANT=$BUILD_VARIANT" >> $BUILD_PATH/env
           echo "TELEGRAM_BOT_ID=$TELEGRAM_BOT_ID" >> $BUILD_PATH/env
           echo "TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID" >> $BUILD_PATH/env
           echo "PR_NUMBER=$(jq -Mcer .pull_request.number $GITHUB_EVENT_PATH)" >> $BUILD_PATH/env
