@@ -124,7 +124,7 @@ fun setQuality(variant: com.android.build.api.variant.ApplicationVariant) {
 androidComponents.onVariants { variant ->
     val output = variant.outputs.single()
     check(output is com.android.build.api.variant.impl.VariantOutputImpl)
-    output.outputFileName.set("${Repository.name}-${output.versionCode.get()}-${variant.buildType!!}.apk")
+    output.outputFileName.set("${Repository.name}-${Version.Application.name}-${Version.Application.code}-${variant.buildType!!}.apk")
     afterEvaluate {
         setCoverage(variant)
         setQuality(variant)
