@@ -4,7 +4,7 @@ echo "Workflow verify on failed start..."
 
 SCRIPTS=repository/buildSrc/src/main/resources/bash
 
-. $SCRIPTS/util/require VCS_PAT REPOSITORY_OWNER REPOSITORY_NAME GITHUB_RUN_NUMBER GITHUB_RUN_ID
+. $SCRIPTS/util/require REPOSITORY_OWNER REPOSITORY_NAME GITHUB_RUN_NUMBER GITHUB_RUN_ID
 
 GIT_COMMIT_SHA=$($SCRIPTS/util/jqx -sfs assemble/vcs/commit.json .sha) \
  || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
