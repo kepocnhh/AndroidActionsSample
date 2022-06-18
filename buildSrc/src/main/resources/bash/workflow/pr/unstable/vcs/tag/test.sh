@@ -4,8 +4,6 @@ echo "Workflow pull request unstable VCS tag test..."
 
 SCRIPTS=repository/buildSrc/src/main/resources/bash
 
-REQUIRE_FILLED_STRING="select((.!=null)and(type==\"string\")and(.!=\"\"))"
-
 VERSION_NAME=$($SCRIPTS/util/jqx -sfs assemble/project/common.json .version.name) \
  || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
 VERSION_CODE=$($SCRIPTS/util/jqx -si assemble/project/common.json .version.code) \
