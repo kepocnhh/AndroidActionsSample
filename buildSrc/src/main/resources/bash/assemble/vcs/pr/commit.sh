@@ -35,7 +35,7 @@ if test $CODE -ne 200; then
  exit 22
 fi
 
-AUTHOR_HTML_URL=$($SCRIPTS/util/jqx -sfs assemble/vcs/author.src.json .html_url) \
+AUTHOR_HTML_URL=$($SCRIPTS/util/jqx -sfs assemble/vcs/commit/author.src.json .html_url) \
  || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
 
 echo "The author source $AUTHOR_HTML_URL is ready."
@@ -69,7 +69,7 @@ if test $CODE -ne 200; then
  exit 22
 fi
 
-AUTHOR_HTML_URL=$($SCRIPTS/util/jqx -sfs assemble/vcs/author.dst.json .html_url) \
+AUTHOR_HTML_URL=$($SCRIPTS/util/jqx -sfs assemble/vcs/commit/author.dst.json .html_url) \
  || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
 
 echo "The author destination $AUTHOR_HTML_URL is ready."
