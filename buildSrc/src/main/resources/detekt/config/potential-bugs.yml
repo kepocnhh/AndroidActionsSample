@@ -45,7 +45,8 @@ potential-bugs:
       kotlin.collections.removeAll,
       kotlin.error,
       kotlin.TODO,
-      kotlinx.coroutines.launch
+      kotlinx.coroutines.launch,
+      kotlinx.coroutines.withContext
     ]
   ImplicitDefaultLocale:
     active: true

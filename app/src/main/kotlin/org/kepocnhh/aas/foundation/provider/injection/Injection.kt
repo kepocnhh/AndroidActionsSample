@@ -1,9 +1,9 @@
 package org.kepocnhh.aas.foundation.provider.injection
 
+import org.kepocnhh.aas.foundation.provider.coroutines.CoroutinesProvider
 import java.io.File
-import kotlin.coroutines.CoroutineContext
 
-interface Injection {
+internal interface Injection {
     val cacheDir: File
-    val context: CoroutineContext
+    val coroutines: CoroutinesProvider
 }

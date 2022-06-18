@@ -1,0 +1,37 @@
+{
+  "README": {
+    "report": "build/reports/analysis/readme",
+    "path": "analysis/readme",
+    "title": "Readme",
+    "task": "verifyReadme",
+    "byVariant": false
+  },
+  "LICENSE": {
+    "report": "build/reports/analysis/license",
+    "path": "analysis/license",
+    "title": "License",
+    "task": "verifyLicense",
+    "byVariant": false
+  },
+  "CODE_STYLE": {
+    "report": "build/reports/analysis/code/style/html",
+    "path": "analysis/code/style",
+    "title": "Code style",
+    "task": "verifyCodeStyle",
+    "byVariant": false
+  },
+  "CODE_QUALITY_main": {
+    "report": "app/build/reports/analysis/code/quality/?/main/html",
+    "path": "analysis/code/quality/?/main",
+    "title": "Code quality",
+    "task": "app:verifyCodeQuality?Main",
+    "byVariant": true
+  },
+  "CODE_QUALITY_test": {
+    "report": "app/build/reports/analysis/code/quality/?/test/html",
+    "path": "analysis/code/quality/?/test",
+    "title": "Code quality (test)",
+    "task": "app:verifyCodeQuality?Test",
+    "byVariant": true
+  }
+}

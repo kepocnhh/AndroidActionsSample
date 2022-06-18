@@ -30,6 +30,7 @@ naming:
     active: true
     functionPattern: '[a-z][a-zA-Z0-9]*'
     excludeClassPattern: '$^'
+    ignoreAnnotated: ['Composable']
     ignoreOverridden: true
   FunctionParameterNaming:
     active: true
