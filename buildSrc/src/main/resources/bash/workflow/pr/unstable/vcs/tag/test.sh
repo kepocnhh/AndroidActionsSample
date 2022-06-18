@@ -10,7 +10,10 @@ VERSION_CODE=$($SCRIPTS/util/jqx -si assemble/project/common.json .version.code)
  || . $SCRIPTS/util/throw $? "$(cat /tmp/jqx.o)"
 TAG="${VERSION_NAME}-${VERSION_CODE}-UNSTABLE"
 
-/bin/bash $SCRIPTS/vcs/tag/test.sh "$TAG" \
- || /bin/bash $SCRIPTS/workflow/pr/unstable/vcs/tag/test/on_failed.sh; exit 11
+CODE=0
+/bin/bash $SCRIPTS/vcs/tag/test.sh "$TAG"; CODE=$?
+if test $CODE -ne 0; then
+ /bin/bash $SCRIPTS/workflow/pr/unstable/vcs/tag/test/on_failed.sh; exit 11
+fi
 
 exit 0
