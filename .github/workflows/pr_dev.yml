@@ -1,10 +1,10 @@
-name: Pull request to unstable
+name: Pull request to dev
 
 on:
   pull_request:
     types: [opened, reopened]
     branches:
-      - unstable
+      - dev
 
 jobs:
   build:
@@ -31,7 +31,7 @@ jobs:
            --build-arg REPOSITORY_NAME=$REPOSITORY_NAME \
            --build-arg VCS_PAT=$VCS_PAT \
            --build-arg GIT_BRANCH_SRC=$(jq -r .pull_request.head.ref $GITHUB_EVENT_PATH) \
-           -t image.pr.unstable:$GITHUB_RUN_NUMBER \
+           -t image.pr.dev:$GITHUB_RUN_NUMBER \
            -f $BUILD_PATH/repository/buildSrc/src/main/resources/docker/checkout.GIT_BRANCH_SRC.docker $BUILD_PATH/repository
       - env:
           KEYSTORES: ${{secrets.KEYSTORES}}
@@ -56,5 +56,5 @@ jobs:
            -e KEYSTORE_PASSWORD="$(echo "$KEYSTORES" | jq -Mcer ".${BUILD_VARIANT}.password")" \
            -e KEYSTORE_FINGERPRINT="$(echo "$KEYSTORE_FINGERPRINTS" | jq -Mcer ".${BUILD_VARIANT}.sha256")" \
            --env-file $BUILD_PATH/env \
-           --name container.pr.unstable image.pr.unstable:$GITHUB_RUN_NUMBER \
-           /bin/bash repository/buildSrc/src/main/resources/bash/workflow/pr/unstable/main.sh
+           --name container.pr.dev image.pr.dev:$GITHUB_RUN_NUMBER \
+           /bin/bash repository/buildSrc/src/main/resources/bash/workflow/pr/dev/main.sh
