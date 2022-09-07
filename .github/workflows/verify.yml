@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       git_branch_src:
-        description: "GIT branch source name. For example [dev, wip...]."
+        description: "GIT branch source name. For example [wip, dev...]."
         required: true
-        default: "dev"
+        default: "wip"
       build_variant:
         description: "Android build variant name (build flavor + build type). For example [debug, release...]."
         required: true
@@ -16,36 +16,36 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     env:
-      REPOSITORY_OWNER: kepocnhh
-      REPOSITORY_NAME: AndroidActionsSample
       VCS_PAT: ${{secrets.PERSONAL_ACCESS_TOKEN}}
     steps:
       - run: |
-          echo "HOME=$(echo ~)" >> $GITHUB_ENV
-          echo "BUILD_PATH=$HOME/$(jq -Mcer .workflow $GITHUB_EVENT_PATH | base64)/$GITHUB_RUN_NUMBER/$GITHUB_RUN_ID" >> $GITHUB_ENV
+          echo "REPOSITORY_OWNER=$(jq -r .repository.owner.login $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+          echo "REPOSITORY_NAME=$(jq -r .repository.name $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
           echo "GIT_BRANCH_SRC=${{github.event.inputs.git_branch_src}}" >> $GITHUB_ENV
           echo "BUILD_VARIANT=${{github.event.inputs.build_variant}}" >> $GITHUB_ENV
-          if test "$VCS_PAT" == ""; then exit 21; fi
-      - run: |
-          mkdir -p $BUILD_PATH/repository
-          git -C $BUILD_PATH/repository init
-          git -C $BUILD_PATH/repository remote add origin https://$VCS_PAT@github.com/$REPOSITORY_OWNER/$REPOSITORY_NAME.git
-          git -C $BUILD_PATH/repository fetch --depth=1 origin $GIT_BRANCH_SRC
-          git -C $BUILD_PATH/repository checkout FETCH_HEAD
-      - run: |
+          if test -z "$VCS_PAT"; then exit 21; fi
+          mkdir -p repository
+      - working-directory: repository
+        run: |
+          git init
+          git remote add origin https://$VCS_PAT@github.com/$REPOSITORY_OWNER/$REPOSITORY_NAME.git
+          git fetch --depth=1 origin $GIT_BRANCH_SRC
+          git checkout FETCH_HEAD
+          cat .github/env >> $GITHUB_ENV
+      - working-directory: repository
+        run: |
           docker build --no-cache \
            --build-arg REPOSITORY_OWNER=$REPOSITORY_OWNER \
            --build-arg REPOSITORY_NAME=$REPOSITORY_NAME \
+           --build-arg VERSION_CI_EXTENSION=$VERSION_CI_EXTENSION \
            --build-arg VCS_PAT=$VCS_PAT \
            --build-arg GIT_BRANCH_SRC=$GIT_BRANCH_SRC \
-           -t image.verify:$GITHUB_RUN_NUMBER \
-           -f $BUILD_PATH/repository/buildSrc/src/main/resources/docker/checkout.FETCH_HEAD.docker $BUILD_PATH/repository
+           -t image.$GITHUB_RUN_ID:$GITHUB_RUN_NUMBER \
+           -f buildSrc/src/main/resources/docker/checkout.FETCH_HEAD.docker .
       - env:
           KEYSTORES: ${{secrets.KEYSTORES}}
           KEYSTORE_FINGERPRINTS: ${{secrets.KEYSTORE_FINGERPRINTS}}
-          TELEGRAM_BOT_ID: ${{secrets.TELEGRAM_BOT_ID}}
-          TELEGRAM_BOT_TOKEN: ${{secrets.TELEGRAM_BOT_TOKEN}}
-          TELEGRAM_CHAT_ID: ${{secrets.TELEGRAM_CHAT_ID}}
+          TELEGRAM: ${{secrets.TELEGRAM}}
         run: |
           echo "REPOSITORY_OWNER=$REPOSITORY_OWNER" > $BUILD_PATH/env
           echo "REPOSITORY_NAME=$REPOSITORY_NAME" >> $BUILD_PATH/env

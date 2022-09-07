@@ -1,0 +1,16 @@
+{
+  "README": {
+    "report": "build/reports/analysis/readme",
+    "path": "analysis/readme",
+    "title": "Readme",
+    "task": "verifyReadme",
+    "byVariant": false
+  },
+  "LICENSE": {
+    "report": "build/reports/analysis/license",
+    "path": "analysis/license",
+    "title": "License",
+    "task": "verifyLicense",
+    "byVariant": false
+  }
+}
