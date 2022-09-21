@@ -15,10 +15,12 @@ arg REPOSITORY_NAME
 
 run mkdir -p /${REPOSITORY_OWNER}/${REPOSITORY_NAME}/repository
 workdir /${REPOSITORY_OWNER}/${REPOSITORY_NAME}
-run mkdir -p ex && mkdir -p ci \
+run mkdir -p ci \
  && cp -r /opt/CIExtension/ci/android/app/github/workflow ci/workflow \
  && cp -r /opt/CIExtension/ex/github ex/github \
+ && mkdir -p ex/android \
  && cp -r /opt/CIExtension/ex/android/app ex/android/app \
+ && mkdir -p ex/notification \
  && cp -r /opt/CIExtension/ex/notification/telegram ex/notification/telegram
 
 arg VCS_PAT
