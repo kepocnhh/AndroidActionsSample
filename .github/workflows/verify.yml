@@ -32,7 +32,7 @@ jobs:
           git remote add origin https://$VCS_PAT@github.com/$REPOSITORY_OWNER/$REPOSITORY_NAME.git
           git fetch --depth=1 origin $GIT_BRANCH_SRC
           git checkout FETCH_HEAD
-          cat .github/env >> $GITHUB_ENV
+          cat .github/env/common >> $GITHUB_ENV
       - working-directory: repository
         run: |
           docker build --no-cache \
