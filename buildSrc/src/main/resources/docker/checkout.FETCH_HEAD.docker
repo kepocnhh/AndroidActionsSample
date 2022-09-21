@@ -1,10 +1,26 @@
-from kepocnhh/android-amd64:b30.0.3pt33.0.2p31
+from kepocnhh/android-amd64:b30.0.3pt33.0.3p31
+
+arg VERSION_CI_EXTENSION
+
+run mkdir -p /opt/GitHubCIExtension
+workdir /opt/GitHubCIExtension
+run git init \
+ && git remote add origin \
+  https://github.com/kepocnhh/GitHubCIExtension.git \
+ && git fetch --depth=1 origin $VERSION_CI_EXTENSION \
+ && git checkout FETCH_HEAD
 
 arg REPOSITORY_OWNER
 arg REPOSITORY_NAME
 
 run mkdir -p /${REPOSITORY_OWNER}/${REPOSITORY_NAME}/repository
 workdir /${REPOSITORY_OWNER}/${REPOSITORY_NAME}
+
+run mkdir -p ex && mkdir -p ci \
+ && cp -r ci/android/app/github/workflow ci/workflow \
+ && cp -r ex/github ex/github \
+ && cp -r ex/android/app ex/android/app \
+ && cp -r ex/notification/telegram ex/notification/telegram
 
 arg VCS_PAT
 arg GIT_BRANCH_SRC
