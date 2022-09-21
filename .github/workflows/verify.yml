@@ -11,6 +11,10 @@ on:
         description: "Android build variant name (build flavor + build type). For example [debug, release...]."
         required: true
         default: "debug"
+      key_alias:
+        description: "For example [debug, release...]."
+        required: true
+        default: "debug"
 
 jobs:
   build:
@@ -24,6 +28,7 @@ jobs:
           echo "CI_BUILD_ID=$GITHUB_RUN_ID" >> $GITHUB_ENV
           echo "GIT_BRANCH_SRC=${{github.event.inputs.git_branch_src}}" >> $GITHUB_ENV
           echo "BUILD_VARIANT=${{github.event.inputs.build_variant}}" >> $GITHUB_ENV
+          echo "KEY_ALIAS=${{github.event.inputs.key_alias}}" >> $GITHUB_ENV
           if test -z "$VCS_PAT"; then exit 21; fi
           mkdir -p repository
       - working-directory: repository
@@ -45,7 +50,7 @@ jobs:
            -f=buildSrc/src/main/resources/docker/checkout.FETCH_HEAD.docker .
       - env:
           KEYSTORES: ${{secrets.KEYSTORES}}
-          KEYSTORE_FINGERPRINTS: ${{secrets.KEYSTORE_FINGERPRINTS}}
+          FINGERPRINTS: ${{secrets.FINGERPRINTS}}
           TELEGRAM: ${{secrets.TELEGRAM}}
         run: |
           docker run --rm \
@@ -55,9 +60,9 @@ jobs:
            -e REPOSITORY_NAME=$REPOSITORY_NAME \
            -e CI_BUILD_ID=$CI_BUILD_ID \
            -e BUILD_VARIANT=$BUILD_VARIANT \
-           -e KEYSTORE="$(echo "$KEYSTORES" | jq -r ".${BUILD_VARIANT}.base64")" \
-           -e KEYSTORE_PASSWORD="$(echo "$KEYSTORES" | jq -r ".${BUILD_VARIANT}.password")" \
-           -e KEYSTORE_FINGERPRINT="$(echo "$KEYSTORE_FINGERPRINTS" | jq -re ".${BUILD_VARIANT}.sha256")" \
+           -e KEYSTORE="$(echo "$KEYSTORES" | base64 -d | jq -Mer .${KEY_ALIAS}.base64)" \
+           -e KEYSTORE_PASSWORD="$(echo "$KEYSTORES" | base64 -d | jq -Mer .${KEY_ALIAS}.password)" \
+           -e KEY_X509_SHA512="$(echo "$FINGERPRINTS" | base64 -d | jq -Mer .key.${KEY_ALIAS}.x509.sha512)" \
            -e TELEGRAM_BOT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mcer ".bot.continuousibot.id")" \
            -e TELEGRAM_BOT_TOKEN="$(echo "$TELEGRAM" | base64 -d | jq -Mcer ".bot.continuousibot.token")" \
            -e TELEGRAM_CHAT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mcer ".chat.kepocnhh.id")" \
