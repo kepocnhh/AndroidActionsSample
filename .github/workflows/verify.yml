@@ -62,4 +62,4 @@ jobs:
            -e TELEGRAM_BOT_TOKEN="$(echo "$TELEGRAM" | base64 -d | jq -Mcer ".bot.continuousibot.token")" \
            -e TELEGRAM_CHAT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mcer ".chat.kepocnhh.id")" \
            --name container.verify image.verify:$CI_BUILD_ID \
-           ex/workflow/verify/main.sh
+           ci/workflow/verify/main.sh
