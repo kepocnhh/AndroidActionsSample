@@ -1,6 +1,6 @@
-package org.kepocnhh.aas.implementation.module.main
+package org.kepocnhh.aas.implementation.module.foo
 
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.kepocnhh.aas.implementation.provider.injection.mock.MockInjection
 import org.kepocnhh.aas.util.androidx.lifecycle.runViewModel
@@ -8,17 +8,17 @@ import org.kepocnhh.aas.util.org.junit.JUnitUtil
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-internal class MainViewModelTest {
+internal class FooViewModelTest {
     @Test(timeout = JUnitUtil.timeout)
     fun logoutTest() {
         val injection = MockInjection()
-        injection.runViewModel<MainViewModel> { viewModel ->
-            val time = suspendCoroutine<Long> { continuation ->
-                viewModel.requestTime { time ->
+        injection.runViewModel<FooViewModel> { viewModel ->
+            val number = suspendCoroutine<Int> { continuation ->
+                viewModel.requestOne { time ->
                     continuation.resume(time)
                 }
             }
-            assertTrue(time <= System.currentTimeMillis())
+            assertEquals(1, number)
         }
     }
 }
