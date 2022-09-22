@@ -12,7 +12,7 @@ internal class FooViewModel(private val injection: Injection) : AbstractViewMode
             withContext(injection.coroutines.io) {
                 delay(3_000)
             }
-            onSuccess(2)
+            onSuccess(1)
         }
     }
 }
