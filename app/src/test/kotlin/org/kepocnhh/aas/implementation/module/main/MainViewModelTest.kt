@@ -1,5 +1,6 @@
 package org.kepocnhh.aas.implementation.module.main
 
+import java.util.List
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.kepocnhh.aas.implementation.provider.injection.mock.MockInjection
