@@ -10,51 +10,53 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     env:
-      REPOSITORY_OWNER: kepocnhh
-      REPOSITORY_NAME: AndroidActionsSample
       VCS_PAT: ${{secrets.PERSONAL_ACCESS_TOKEN}}
     steps:
       - run: |
-          echo "HOME=$(echo ~)" >> $GITHUB_ENV
-          echo "BUILD_PATH=$HOME/$(jq -Mcer .workflow $GITHUB_EVENT_PATH | base64)/$GITHUB_RUN_NUMBER/$GITHUB_RUN_ID" >> $GITHUB_ENV
-          echo "BUILD_VARIANT=debug" >> $GITHUB_ENV
-          if test "$VCS_PAT" == ""; then exit 1; fi
-      - run: |
-          mkdir -p $BUILD_PATH/repository
-          git -C $BUILD_PATH/repository init
-          git -C $BUILD_PATH/repository remote add origin https://$VCS_PAT@github.com/$REPOSITORY_OWNER/$REPOSITORY_NAME.git
-          git -C $BUILD_PATH/repository fetch --depth=1 origin $(jq -Mcer .pull_request.head.sha $GITHUB_EVENT_PATH)
-          git -C $BUILD_PATH/repository checkout FETCH_HEAD
-      - run: |
+          echo "REPOSITORY_OWNER=$(jq -r .repository.owner.login $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+          echo "REPOSITORY_NAME=$(jq -r .repository.name $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+          echo "CI_BUILD_ID=$GITHUB_RUN_ID" >> $GITHUB_ENV
+          echo "GIT_BRANCH_SRC=$(jq -r .pull_request.head.sha $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+          if test -z "$VCS_PAT"; then exit 21; fi
+          mkdir -p repository
+      - working-directory: repository
+        run: |
+          git init
+          git remote add origin https://$VCS_PAT@github.com/$REPOSITORY_OWNER/$REPOSITORY_NAME.git
+          git fetch --depth=1 origin $GIT_BRANCH_SRC
+          git checkout FETCH_HEAD
+          cat .github/env/common >> $GITHUB_ENV
+      - working-directory: repository
+        run: |
           docker build --no-cache \
            --build-arg REPOSITORY_OWNER=$REPOSITORY_OWNER \
            --build-arg REPOSITORY_NAME=$REPOSITORY_NAME \
+           --build-arg VERSION_CI_EXTENSION=$VERSION_CI_EXTENSION \
            --build-arg VCS_PAT=$VCS_PAT \
-           --build-arg GIT_BRANCH_SRC=$(jq -r .pull_request.head.ref $GITHUB_EVENT_PATH) \
-           -t image.pr.unstable:$GITHUB_RUN_NUMBER \
-           -f $BUILD_PATH/repository/buildSrc/src/main/resources/docker/pr/unstable.docker $BUILD_PATH/repository
+           --build-arg GIT_BRANCH_SRC=$GIT_BRANCH_SRC \
+           -t=image.pr.unstable:$CI_BUILD_ID \
+           -f=buildSrc/src/main/resources/docker/checkout.GIT_BRANCH_SRC.docker .
       - env:
+          BUILD_VARIANT: debug
+          KEY_ALIAS: debug
           KEYSTORES: ${{secrets.KEYSTORES}}
-          KEYSTORE_FINGERPRINTS: ${{secrets.KEYSTORE_FINGERPRINTS}}
-          TELEGRAM_BOT_ID: ${{secrets.TELEGRAM_BOT_ID}}
-          TELEGRAM_BOT_TOKEN: ${{secrets.TELEGRAM_BOT_TOKEN}}
-          TELEGRAM_CHAT_ID: ${{secrets.TELEGRAM_CHAT_ID}}
+          FINGERPRINTS: ${{secrets.FINGERPRINTS}}
+          TELEGRAM: ${{secrets.TELEGRAM}}
         run: |
-          echo "REPOSITORY_OWNER=$REPOSITORY_OWNER" > $BUILD_PATH/env
-          echo "REPOSITORY_NAME=$REPOSITORY_NAME" >> $BUILD_PATH/env
-          echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER" >> $BUILD_PATH/env
-          echo "GITHUB_RUN_ID=$GITHUB_RUN_ID" >> $BUILD_PATH/env
-          echo "BUILD_VARIANT=$BUILD_VARIANT" >> $BUILD_PATH/env
-          echo "TELEGRAM_BOT_ID=$TELEGRAM_BOT_ID" >> $BUILD_PATH/env
-          echo "TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID" >> $BUILD_PATH/env
-          echo "PR_NUMBER=$(jq -Mcer .pull_request.number $GITHUB_EVENT_PATH)" >> $BUILD_PATH/env
           docker run --rm \
            -e VCS_PAT=$VCS_PAT \
-           -e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN \
-           -e VCS_DOMAIN="https://api.github.com" \
-           -e KEYSTORE="$(echo "$KEYSTORES" | jq -Mcer ".${BUILD_VARIANT}.base64")" \
-           -e KEYSTORE_PASSWORD="$(echo "$KEYSTORES" | jq -Mcer ".${BUILD_VARIANT}.password")" \
-           -e KEYSTORE_FINGERPRINT="$(echo "$KEYSTORE_FINGERPRINTS" | jq -Mcer ".${BUILD_VARIANT}.sha256")" \
-           --env-file $BUILD_PATH/env \
-           --name container.pr.unstable image.pr.unstable:$GITHUB_RUN_NUMBER \
-           /bin/bash repository/buildSrc/src/main/resources/bash/workflow/pr/unstable/main.sh
+           -e VCS_DOMAIN="$VCS_DOMAIN" \
+           -e REPOSITORY_OWNER=$REPOSITORY_OWNER \
+           -e REPOSITORY_NAME=$REPOSITORY_NAME \
+           -e CI_BUILD_ID=$CI_BUILD_ID \
+           -e BUILD_VARIANT=$BUILD_VARIANT \
+           -e KEY_ALIAS=$KEY_ALIAS \
+           -e KEYSTORE="$(echo "$KEYSTORES" | base64 -d | jq -Mer .${KEY_ALIAS}.base64)" \
+           -e KEYSTORE_PASSWORD="$(echo "$KEYSTORES" | base64 -d | jq -Mer .${KEY_ALIAS}.password)" \
+           -e KEY_X509_SHA512="$(echo "$FINGERPRINTS" | base64 -d | jq -Mer .key.${KEY_ALIAS}.x509.sha512)" \
+           -e PR_NUMBER=$(jq -r .pull_request.number $GITHUB_EVENT_PATH) \
+           -e TELEGRAM_BOT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mcer ".bot.continuousibot.id")" \
+           -e TELEGRAM_BOT_TOKEN="$(echo "$TELEGRAM" | base64 -d | jq -Mcer ".bot.continuousibot.token")" \
+           -e TELEGRAM_CHAT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mcer ".chat.kepocnhh.id")" \
+           --name container.pr.unstable image.pr.unstable:$CI_BUILD_ID \
+           ci/workflow/pr/unstable.sh
