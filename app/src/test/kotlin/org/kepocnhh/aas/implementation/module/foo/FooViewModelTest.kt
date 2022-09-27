@@ -14,9 +14,9 @@ internal class FooViewModelTest {
         val injection = MockInjection()
         injection.runViewModel<FooViewModel> { viewModel ->
             val number = suspendCoroutine<Int> { continuation ->
-                viewModel.requestOne { time ->
-                    continuation.resume(time)
-                }
+//                viewModel.requestOne { time ->
+//                    continuation.resume(time)
+//                }
             }
             assertEquals(1, number)
         }
