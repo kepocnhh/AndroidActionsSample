@@ -15,14 +15,4 @@ internal class FooViewModel(private val injection: Injection) : AbstractViewMode
             onSuccess(1)
         }
     }
-
-    @Suppress("MagicNumber")
-    fun requestTwo(onSuccess: (Int) -> Unit) {
-        injection.launch {
-            withContext(injection.coroutines.io) {
-                delay(3_000)
-            }
-            onSuccess(2)
-        }
-    }
 }
