@@ -1,6 +1,5 @@
 package org.kepocnhh.aas
 
-import android.app.ActivityManager
 import android.app.Application
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
