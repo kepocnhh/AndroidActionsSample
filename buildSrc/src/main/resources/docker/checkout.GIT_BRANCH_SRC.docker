@@ -1,10 +1,20 @@
-from kepocnhh/android-amd64:b30.0.3pt33.0.2p31
+from kepocnhh/android-amd64:b30.0.3pt33.0.3p31
 
 arg REPOSITORY_OWNER
 arg REPOSITORY_NAME
 
 run mkdir -p /${REPOSITORY_OWNER}/${REPOSITORY_NAME}/repository
 workdir /${REPOSITORY_OWNER}/${REPOSITORY_NAME}
+
+arg VERSION_CI_EXTENSION
+
+run curl -L https://github.com/kepocnhh/GitHubCIExtension/archive/refs/tags/${VERSION_CI_EXTENSION}.zip \
+ -o /tmp/GitHubCIExtension-${VERSION_CI_EXTENSION}.zip \
+ && unzip -q -d /opt/ /tmp/GitHubCIExtension-${VERSION_CI_EXTENSION}.zip \
+ && rm /tmp/GitHubCIExtension-${VERSION_CI_EXTENSION}.zip
+run mkdir ci \
+ && cp -r /opt/GitHubCIExtension-${VERSION_CI_EXTENSION}/ci/android/app/github/workflow ci/workflow \
+ && cp -r /opt/GitHubCIExtension-${VERSION_CI_EXTENSION}/ex ex
 
 arg VCS_PAT
 arg GIT_BRANCH_SRC
