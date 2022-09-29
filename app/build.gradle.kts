@@ -18,10 +18,11 @@ android {
         targetSdk = Version.Android.targetSdk
         versionCode = Version.Application.code
         versionName = Version.Application.name
+        manifestPlaceholders["appName"] = "@string/app_name"
     }
 
     buildTypes {
-        getByName("debug") {
+        getByName(BuildType.debug) {
             applicationIdSuffix = ".$name"
             versionNameSuffix = "-$name"
             isMinifyEnabled = false
@@ -38,6 +39,24 @@ android {
         }
     }
 
+    productFlavors {
+        FlavorDimension.version.also { dimension ->
+            flavorDimensions += dimension
+            setOf(
+                ProductFlavor.unstable,
+                ProductFlavor.staging,
+                ProductFlavor.snapshot
+            ).forEach { flavor ->
+                create(flavor) {
+                    this.dimension = dimension
+                    applicationIdSuffix = ".$name"
+                    versionNameSuffix = "-$name"
+                    manifestPlaceholders[dimension] = name
+                }
+            }
+        }
+    }
+
     buildFeatures {
         compose = true
     }
@@ -47,7 +66,7 @@ android {
     }
 }
 
-fun setCoverage(variant: com.android.build.api.variant.ApplicationVariant) {
+fun setCoverage(variant: com.android.build.api.variant.ComponentIdentity) {
     val capitalize = variant.name.capitalize()
     val taskUnitTest = tasks.getByName<Test>("test${capitalize}UnitTest")
     val pack = "org.kepocnhh.aas"
@@ -80,7 +99,7 @@ fun setCoverage(variant: com.android.build.api.variant.ApplicationVariant) {
     }
 }
 
-fun setQuality(variant: com.android.build.api.variant.ApplicationVariant) {
+fun setQuality(variant: com.android.build.api.variant.ComponentIdentity) {
     val capitalize = variant.name.capitalize()
     val configs = setOf(
         "common",
@@ -121,10 +140,47 @@ fun setQuality(variant: com.android.build.api.variant.ApplicationVariant) {
     }
 }
 
-androidComponents.onVariants { variant ->
+fun com.android.build.api.variant.ComponentIdentity.getOutputFileName(): String {
+    val postfix = when (buildType) {
+        BuildType.debug -> when (flavorName) {
+            ProductFlavor.unstable -> "UNSTABLE"
+            else -> error("Product flavor \"$flavorName\" does not supported!")
+        }
+        else -> error("Build type \"$buildType\" does not supported!")
+    }
+    return "${Repository.name}-${Version.Application.name}-${Version.Application.code}-$postfix.apk"
+}
+
+val supported = mapOf(
+    BuildType.debug to mapOf(
+        FlavorDimension.version to setOf(
+            ProductFlavor.unstable
+        )
+    )
+)
+
+fun com.android.build.api.variant.ComponentIdentity.isSupported(): Boolean {
+    val flavors = supported[buildType]
+    if (flavors.isNullOrEmpty()) return false
+    return productFlavors.all { (dimension, flavor) ->
+        flavors[dimension]?.contains(flavor) ?: false
+    }
+}
+
+fun onVariant(variant: com.android.build.api.variant.ApplicationVariant) {
+    if (!variant.isSupported()) {
+        afterEvaluate {
+            tasks.getByName<JavaCompile>("compile${variant.name.capitalize()}JavaWithJavac") {
+                doFirst {
+                    error("Variant \"${variant.name}\" does not supported!")
+                }
+            }
+        }
+        return
+    }
     val output = variant.outputs.single()
     check(output is com.android.build.api.variant.impl.VariantOutputImpl)
-    output.outputFileName.set("${Repository.name}-${Version.Application.name}-${Version.Application.code}-${variant.buildType!!}.apk")
+    output.outputFileName.set(variant.getOutputFileName())
     afterEvaluate {
         setCoverage(variant)
         setQuality(variant)
@@ -152,8 +208,22 @@ androidComponents.onVariants { variant ->
                 }
             }
         }
-        tasks.getByName("assemble${variant.name.capitalize()}").dependsOn(checkManifestTask)
+        val assembleTask = tasks.getByName("assemble${variant.name.capitalize()}").dependsOn(checkManifestTask)
+        task("assemble${variant.name.capitalize()}Apk") {
+            dependsOn(assembleTask)
+            doLast {
+                val file = File(buildDir, "outputs/apk/${variant.flavorName}/${variant.buildType}/${variant.getOutputFileName()}").existing()
+                val parent = File(buildDir, "outputs/apk/${variant.name}").also {
+                    it.mkdirs()
+                }
+                file.renameTo(File(parent, variant.getOutputFileName()))
+            }
+        }
     }
+}
+
+androidComponents.onVariants {
+    onVariant(it)
 }
 
 jacoco {

@@ -8,9 +8,9 @@ on:
         required: true
         default: "wip"
       build_variant:
-        description: "Android build variant name (build flavor + build type). For example [debug, release...]."
+        description: "Android build variant name (build flavor + build type): [unstableDebug, stagingDebug, snapshotDebug, productionRelease]."
         required: true
-        default: "debug"
+        default: "unstableDebug"
       key_alias:
         description: "Key alias. For example [debug, release...]."
         required: true
