@@ -145,6 +145,7 @@ fun com.android.build.api.variant.ComponentIdentity.getOutputFileName(): String 
         BuildType.debug -> when (flavorName) {
             ProductFlavor.unstable -> "UNSTABLE"
             ProductFlavor.staging -> "STAGING"
+            ProductFlavor.snapshot -> "SNAPSHOT"
             else -> error("Product flavor \"$flavorName\" does not supported!")
         }
         else -> error("Build type \"$buildType\" does not supported!")
@@ -156,7 +157,8 @@ val supported = mapOf(
     BuildType.debug to mapOf(
         FlavorDimension.version to setOf(
             ProductFlavor.unstable,
-            ProductFlavor.staging
+            ProductFlavor.staging,
+            ProductFlavor.snapshot
         )
     )
 )

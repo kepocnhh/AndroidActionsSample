@@ -15,7 +15,7 @@ object Version {
     }
 
     object Application {
-        const val code = 9
+        const val code = 7
         const val name = "0.$code"
 
         fun full(): String {
