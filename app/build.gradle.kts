@@ -144,6 +144,7 @@ fun com.android.build.api.variant.ComponentIdentity.getOutputFileName(): String 
     val postfix = when (buildType) {
         BuildType.debug -> when (flavorName) {
             ProductFlavor.unstable -> "UNSTABLE"
+            ProductFlavor.staging -> "STAGING"
             else -> error("Product flavor \"$flavorName\" does not supported!")
         }
         else -> error("Build type \"$buildType\" does not supported!")
@@ -154,7 +155,8 @@ fun com.android.build.api.variant.ComponentIdentity.getOutputFileName(): String 
 val supported = mapOf(
     BuildType.debug to mapOf(
         FlavorDimension.version to setOf(
-            ProductFlavor.unstable
+            ProductFlavor.unstable,
+            ProductFlavor.staging
         )
     )
 )
