@@ -148,7 +148,7 @@ fun com.android.build.api.variant.ComponentIdentity.getOutputFileName(): String 
         }
         else -> error("Build type \"$buildType\" does not supported!")
     }
-    return "${Repository.name}-${Version.Application.name}-${Version.Application.code}-${postfix}.apk"
+    return "${Repository.name}-${Version.Application.name}-${Version.Application.code}-$postfix.apk"
 }
 
 val supported = mapOf(
