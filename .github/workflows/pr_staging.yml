@@ -38,7 +38,7 @@ jobs:
            -t=image.pr.staging:$CI_BUILD_ID \
            -f=buildSrc/src/main/resources/docker/checkout.GIT_BRANCH_SRC.docker .
       - env:
-          BUILD_VARIANT: debug
+          BUILD_VARIANT: stagingDebug
           KEY_ALIAS: debug
           KEYSTORES: ${{secrets.KEYSTORES}}
           FINGERPRINTS: ${{secrets.FINGERPRINTS}}

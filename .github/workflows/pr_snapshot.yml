@@ -1,10 +1,10 @@
-name: Pull request to unstable
+name: Pull request to snapshot
 
 on:
   pull_request:
     types: [opened, reopened]
     branches:
-      - unstable
+      - snapshot
 
 jobs:
   build:
@@ -26,6 +26,7 @@ jobs:
           git fetch --depth=1 origin $GIT_BRANCH_SRC
           git checkout FETCH_HEAD
           cat .github/env/common >> $GITHUB_ENV
+          cat .github/env/task/management >> $GITHUB_ENV
       - working-directory: repository
         run: |
           docker build --no-cache \
@@ -34,10 +35,10 @@ jobs:
            --build-arg VERSION_CI_EXTENSION=$VERSION_CI_EXTENSION \
            --build-arg VCS_PAT=$VCS_PAT \
            --build-arg GIT_BRANCH_SRC=$GIT_BRANCH_SRC \
-           -t=image.pr.unstable:$CI_BUILD_ID \
+           -t=image.pr.snapshot:$CI_BUILD_ID \
            -f=buildSrc/src/main/resources/docker/checkout.GIT_BRANCH_SRC.docker .
       - env:
-          BUILD_VARIANT: unstableDebug
+          BUILD_VARIANT: debug
           KEY_ALIAS: debug
           KEYSTORES: ${{secrets.KEYSTORES}}
           FINGERPRINTS: ${{secrets.FINGERPRINTS}}
@@ -58,5 +59,7 @@ jobs:
            -e TELEGRAM_BOT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mcer ".bot.continuousibot.id")" \
            -e TELEGRAM_BOT_TOKEN="$(echo "$TELEGRAM" | base64 -d | jq -Mcer ".bot.continuousibot.token")" \
            -e TELEGRAM_CHAT_ID="$(echo "$TELEGRAM" | base64 -d | jq -Mcer ".chat.kepocnhh.id")" \
-           --name container.pr.unstable image.pr.unstable:$CI_BUILD_ID \
-           ci/workflow/pr/unstable.sh
+           -e LABEL_ID_STAGING=$LABEL_ID_STAGING \
+           -e LABEL_ID_SNAPSHOT=$LABEL_ID_SNAPSHOT \
+           --name container.pr.snapshot image.pr.snapshot:$CI_BUILD_ID \
+           ci/workflow/pr/snapshot.sh

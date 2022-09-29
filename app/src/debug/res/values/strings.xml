@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name_unstable_debug">AAS unstable</string>
+    <string name="app_name_staging_debug">AAS staging</string>
+</resources>
