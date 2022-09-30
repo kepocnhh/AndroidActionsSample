@@ -4,7 +4,7 @@
     <application
         android:name=".App"
         android:theme="@style/App.Theme"
-        android:label="Android Actions sample">
+        android:label="${appName}_${version}_${buildType}">
         <activity android:name=".presentation.module.main.MainActivity"
             android:exported="true">
             <intent-filter>
