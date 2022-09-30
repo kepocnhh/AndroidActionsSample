@@ -13,12 +13,12 @@ internal class FooViewModelTest {
     fun requestOneTest() {
         val injection = MockInjection()
         injection.runViewModel<FooViewModel> { viewModel ->
-//            val number = suspendCoroutine<Int> { continuation ->
-//                viewModel.requestOne { time ->
-//                    continuation.resume(time)
-//                }
-//            }
-//            assertEquals(1, number)
+            val number = suspendCoroutine<Int> { continuation ->
+                viewModel.requestOne { time ->
+                    continuation.resume(time)
+                }
+            }
+            assertEquals(1, number)
         }
     }
 }
